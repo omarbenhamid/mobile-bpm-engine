@@ -30,7 +30,7 @@ public class MainActivity extends Activity {
 	
 	private void parseBpmn() {
 		File SDCardRoot = Environment.getExternalStorageDirectory();
-		File file = new File(SDCardRoot, "healthcare.bpmn");
+		File file = new File(SDCardRoot, "sample.bpmn");
 //		File file = new File(SDCardRoot, "MDO_control_annotated.bpmn");
 //		File file = new File(SDCardRoot, "MDO_control_simplest_annotated.bpmn");
 //		File file = new File("MDO control_annotated.bpmn");

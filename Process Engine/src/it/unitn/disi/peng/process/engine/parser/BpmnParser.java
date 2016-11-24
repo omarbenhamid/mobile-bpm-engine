@@ -52,11 +52,11 @@ public class BpmnParser {
 					Element taskElement = (Element) taskElements.item(j);
 					Task task = parseTask(xPath, taskElement);
 					subProcess.addElement(task);
-					
-					if (taskElement.getNodeName().equals("startEvent")) {
+					Log.i("tag","taskElement.getNodeName()="+taskElement.getLocalName());
+					if (taskElement.getLocalName().equals("startEvent")) {
 						subProcess.setStart(task);
 					}
-					else if (taskElement.getNodeName().equals("endEvent")) {
+					else if (taskElement.getLocalName().equals("endEvent")) {
 						subProcess.setEnd(task);
 					}
 //					Log.i(this.getClass().getName(), "nodename:" + taskElement.getNodeName());
@@ -182,7 +182,7 @@ public class BpmnParser {
 				task = new Task(taskId, taskName, className, es);
 			}
 		} catch (XPathExpressionException e) {
-			e.printStackTrace();
+			throw new RuntimeException("Unable to parse task",e);
 		}
 		return task;
 	}
