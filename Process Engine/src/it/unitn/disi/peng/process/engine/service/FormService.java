@@ -56,7 +56,7 @@ public class FormService extends Service {
 
 					public void onClick(View v) {
 						updateElementValues();
-						subProcess.executeNext((Activity) context);
+						//FIXME: here finish the activity instaéd of : subProcess.executeNext((Activity) context);
 					}
 					
 				});

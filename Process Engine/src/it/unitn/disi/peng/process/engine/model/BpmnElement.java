@@ -1,6 +1,8 @@
 package it.unitn.disi.peng.process.engine.model;
 
-public class BpmnElement {
+import java.io.Serializable;
+
+public class BpmnElement implements Serializable{
 	
 	private String id;
 	private String name;
@@ -20,5 +22,13 @@ public class BpmnElement {
 	
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	@Override
+	public String toString() {
+		return "BpmnElement{" +
+				"id='" + id + '\'' +
+				", name='" + name + '\'' +
+				'}';
 	}
 }

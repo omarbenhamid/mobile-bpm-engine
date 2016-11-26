@@ -9,7 +9,7 @@
       <bpmn:outgoing>SequenceFlow_1e6i91g</bpmn:outgoing>
       <bpmn:task id="Task_0xv1yc5" name="task: form">
        <bpmn:extensionElements xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL">
-           <mpe:service class="it.unitn.disi.peng.process.engine.service.FormService" xmlns:mpe="http://peng.disi.unitn.it">
+           <mpe:service class="it.unitn.disi.peng.process.engine.FormActivity" xmlns:mpe="http://peng.disi.unitn.it">
                <mpe:input id="int" type="text" value="some value"/> <!-- HTML Style -->
                <mpe:text id="someId" value="This is some &lt;b&gt;text&lt;/b&gt;Zvalue"/> <!-- Display some text -->
                <mpe:select id="someID">
@@ -24,32 +24,10 @@
       </bpmn:task>
       <bpmn:startEvent id="StartEvent_10t5qb3">
         <bpmn:outgoing>SequenceFlow_0bf83jt</bpmn:outgoing>
-<bpmn:extensionElements xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL">
-           <mpe:service class="it.unitn.disi.peng.process.engine.service.FormService" xmlns:mpe="http://peng.disi.unitn.it">
-               <mpe:input id="int" type="text" value="some value"/> <!-- HTML Style -->
-               <mpe:text id="someId" value="This is some &lt;b&gt;text&lt;/b&gt;Zvalue"/> <!-- Display some text -->
-               <mpe:select id="someID">
-                   <mpe:option value="V1">Option 1</mpe:option>
-                   <mpe:option value="V2">Option 2</mpe:option>
-               </mpe:select>
-               <mpe:input id="inv" type="submit" value="do it"/> <!-- HTML Style -->
-           </mpe:service>
-       </bpmn:extensionElements>
       </bpmn:startEvent>
       <bpmn:sequenceFlow id="SequenceFlow_0bf83jt" sourceRef="StartEvent_10t5qb3" targetRef="Task_0xv1yc5" />
       <bpmn:endEvent id="EndEvent_1x7o427">
         <bpmn:incoming>SequenceFlow_0lzozyi</bpmn:incoming>
-<bpmn:extensionElements xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL">
-           <mpe:service class="it.unitn.disi.peng.process.engine.service.FormService" xmlns:mpe="http://peng.disi.unitn.it">
-               <mpe:input id="int" type="text" value="some value"/> <!-- HTML Style -->
-               <mpe:text id="someId" value="This is some &lt;b&gt;text&lt;/b&gt;Zvalue"/> <!-- Display some text -->
-               <mpe:select id="someID">
-                   <mpe:option value="V1">Option 1</mpe:option>
-                   <mpe:option value="V2">Option 2</mpe:option>
-               </mpe:select>
-               <mpe:input id="inv" type="submit" value="do it"/> <!-- HTML Style -->
-           </mpe:service>
-       </bpmn:extensionElements>
       </bpmn:endEvent>
       <bpmn:sequenceFlow id="SequenceFlow_0lzozyi" sourceRef="Task_0xv1yc5" targetRef="EndEvent_1x7o427" />
     </bpmn:subProcess>

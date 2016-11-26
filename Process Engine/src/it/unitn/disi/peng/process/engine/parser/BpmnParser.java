@@ -6,8 +6,13 @@ import it.unitn.disi.peng.process.engine.model.Task;
 import it.unitn.disi.peng.process.engine.service.*;
 
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.HashMap;
 
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.*;
 
 import org.w3c.dom.Element;
@@ -19,13 +24,17 @@ import android.app.Activity;
 import android.util.Log;
 
 public class BpmnParser {
-	Activity activity;
 
-	public BpmnParser(Activity activity) {
-		this.activity = activity;
-	}
-	
-	public void parse(InputStream in) {
+	private static final String LOG_TAG="mpe.BpmnParser";
+
+
+	/**
+	 * Parse and return the first subprocess instance for bpmn file.
+	 *
+	 * @param in BPMN 2.0 xml stream
+     * @return
+     */
+	public SubProcess parseSubProcess(InputStream in) throws Exception {
 		XPath xPath = XPathFactory.newInstance().newXPath();
 		
 		HashMap<String, String> prefMap = new HashMap<String, String>() {{
@@ -36,154 +45,85 @@ public class BpmnParser {
 		xPath.setNamespaceContext(namespaces);
 		
 		InputSource inputSource = new InputSource(in);
-		try {
-			NodeList subProcesses = (NodeList) xPath.evaluate("/ns:definitions/ns:process/ns:subProcess", inputSource, XPathConstants.NODESET);
-			Log.i(this.getClass().getName(), "subProcess:" + subProcesses.getLength());
-			
-			for (int i = 0; i < subProcesses.getLength(); i++) {
-				Element subProcessElement = (Element) subProcesses.item(i);
-				String subProcessName = xPath.evaluate("@name", subProcessElement);
-				SubProcess subProcess = new SubProcess(subProcessName);
-				
-				NodeList taskElements = (NodeList) xPath.evaluate("ns:task|ns:startEvent|ns:endEvent", subProcessElement, XPathConstants.NODESET);
-				Log.i(this.getClass().getName(), "task:" + subProcessElement.getChildNodes().getLength() + ":" + taskElements.getLength());
-				
-				for (int j = 0; j < taskElements.getLength(); j++) {
-					Element taskElement = (Element) taskElements.item(j);
-					Task task = parseTask(xPath, taskElement);
-					subProcess.addElement(task);
-					Log.i("tag","taskElement.getNodeName()="+taskElement.getLocalName());
-					if (taskElement.getLocalName().equals("startEvent")) {
-						subProcess.setStart(task);
-					}
-					else if (taskElement.getLocalName().equals("endEvent")) {
-						subProcess.setEnd(task);
-					}
-//					Log.i(this.getClass().getName(), "nodename:" + taskElement.getNodeName());
-				}
-				
 
-				NodeList gatewayElements = (NodeList) xPath.evaluate("ns:exclusiveGateway", subProcessElement, XPathConstants.NODESET);
-				for (int j = 0; j < gatewayElements.getLength(); j++) {
-					Element gatewayElement = (Element) gatewayElements.item(j);
-					Gateway gateway = parseGateway(xPath, gatewayElement);
-					subProcess.addElement(gateway);
-				}
-				
-				NodeList flowElements = (NodeList) xPath.evaluate("ns:sequenceFlow", subProcessElement, XPathConstants.NODESET);
-				for (int j = 0; j < flowElements.getLength(); j++) {
-					Element flowElement = (Element) flowElements.item(j);
-					String sourceRef = xPath.evaluate("@sourceRef", flowElement);
-					String targetRef = xPath.evaluate("@targetRef", flowElement);
-					String condition = xPath.evaluate("ns:conditionExpression", flowElement);
-					Log.i(this.getClass().getName(),"condition:" + condition);
-					subProcess.addFlow(sourceRef, targetRef, condition);
-				}
+		NodeList subProcesses = (NodeList) xPath.evaluate("/ns:definitions/ns:process/ns:subProcess", inputSource, XPathConstants.NODESET);
+		Log.i(LOG_TAG, "subProcess:" + subProcesses.getLength());
 
-				subProcess.print();
-//				subProcess.execute(activity);
-				subProcess.executeNext(activity);
+		if(subProcesses.getLength() == 0) throw new Exception("No suprocesses found in bpmn");
+		if(subProcesses.getLength() > 1) Log.w(LOG_TAG,"Many subprocesses in given BPMN : only the first one will be parsed");
+
+		//FIXME: I know there should be no for loop but ...
+		Element subProcessElement = (Element) subProcesses.item(0);
+		String subProcessName = xPath.evaluate("@name", subProcessElement);
+		SubProcess subProcess = new SubProcess(subProcessName);
+
+		NodeList taskElements = (NodeList) xPath.evaluate("ns:task|ns:startEvent|ns:endEvent", subProcessElement, XPathConstants.NODESET);
+		Log.i(LOG_TAG, "task:" + subProcessElement.getChildNodes().getLength() + ":" + taskElements.getLength());
+
+		for (int j = 0; j < taskElements.getLength(); j++) {
+			Element taskElement = (Element) taskElements.item(j);
+
+			Node service = (Node) xPath.evaluate(
+					"ns:extensionElements/mpe:service", taskElement,
+					XPathConstants.NODE);
+
+			Task task;
+
+			if(service != null) {
+
+				StringWriter writer = new StringWriter();
+				Transformer transformer = TransformerFactory.newInstance().newTransformer();
+				transformer.transform(new DOMSource(service), new StreamResult(writer));
+
+				task = new Task(xPath.evaluate("@id", taskElement), xPath.evaluate("@name", taskElement), xPath.evaluate("@class", service), writer.toString());
+			} else {
+				task = new Task(xPath.evaluate("@id", taskElement), xPath.evaluate("@name", taskElement), null, null);
 			}
-		} catch (XPathExpressionException e) {
-			e.printStackTrace();
+
+			subProcess.addElement(task);
+			Log.i("tag","taskElement.getNodeName()="+taskElement.getLocalName());
+			if (taskElement.getLocalName().equals("startEvent")) {
+				subProcess.setStart(task);
+			}
+			else if (taskElement.getLocalName().equals("endEvent")) {
+				subProcess.setEnd(task);
+			}
+//					Log.i(LOG_TAG, "nodename:" + taskElement.getNodeName());
 		}
+
+
+		NodeList gatewayElements = (NodeList) xPath.evaluate("ns:exclusiveGateway", subProcessElement, XPathConstants.NODESET);
+		for (int j = 0; j < gatewayElements.getLength(); j++) {
+			Element gatewayElement = (Element) gatewayElements.item(j);
+			Gateway gateway = parseGateway(xPath, gatewayElement);
+			subProcess.addElement(gateway);
+		}
+
+		NodeList flowElements = (NodeList) xPath.evaluate("ns:sequenceFlow", subProcessElement, XPathConstants.NODESET);
+		for (int j = 0; j < flowElements.getLength(); j++) {
+			Element flowElement = (Element) flowElements.item(j);
+			String sourceRef = xPath.evaluate("@sourceRef", flowElement);
+			String targetRef = xPath.evaluate("@targetRef", flowElement);
+			String condition = xPath.evaluate("ns:conditionExpression", flowElement);
+			Log.i(LOG_TAG,"condition:" + condition);
+			subProcess.addFlow(sourceRef, targetRef, condition);
+		}
+
+		subProcess.print();
+		return subProcess;
 	}
 	
-	public Gateway parseGateway(XPath xPath, Object object) {
+	public Gateway parseGateway(XPath xPath, Object object) throws Exception {
 		Gateway gateway = null;
 
 		Element gatewayElement = (Element) object;
 		String id;
 		String name;
-		try {
-			id = xPath.evaluate("@id", gatewayElement);
-			name = xPath.evaluate("@name", gatewayElement);
-			gateway = new Gateway(id, name);
-		} catch (XPathExpressionException e) {
-			e.printStackTrace();
-		}
+		id = xPath.evaluate("@id", gatewayElement);
+		name = xPath.evaluate("@name", gatewayElement);
+		gateway = new Gateway(id, name);
+
 		return gateway;
 	}
-	
-	public Task parseTask(XPath xPath, Object object) {
-		Task task = null;
 
-		Element taskElement = (Element) object;
-		String taskId;
-		String taskName;
-		try {
-			taskId = xPath.evaluate("@id", taskElement);
-			taskName = xPath.evaluate("@name", taskElement);
-			Node service = (Node) xPath.evaluate(
-					"ns:extensionElements/mpe:service", taskElement,
-					XPathConstants.NODE);
-			String className = xPath.evaluate("@class", service);
-			Log.i(this.getClass().getName(), taskName + ":" + className);
-
-			if (className.equals(Service.FORM_SERVICE)) {
-				FormService fs = new FormService();
-				NodeList serviceElements = service.getChildNodes();
-				for (int k = 0; k < serviceElements.getLength(); k++) {
-					Node serviceElement = serviceElements.item(k);
-					String serviceElementName = serviceElement.getNodeName();
-					if (serviceElementName.equals("mpe:text")) {
-						String id = xPath.evaluate("@id", serviceElement);
-						String value = xPath.evaluate("@value", serviceElement);
-						Text text = new Text(id, "", value);
-						fs.addElement(text);
-						Log.i(this.getClass().getName(), "mpe:text");
-					}
-					else if (serviceElementName.equals("mpe:input")) {
-						String id = xPath.evaluate("@id", serviceElement);
-						String type = xPath.evaluate("@type", serviceElement);
-						String value = xPath.evaluate("@value", serviceElement);
-						if(type.equals("text")) {
-							Input input = new Input(id, type, value);
-							fs.addElement(input);
-						}
-						else if(type.equals("submit")) {
-							Button button = new Button(id, type, value);
-							fs.addElement(button);
-						}
-						else if(type.equals("hidden")) {
-							Hidden hidden = new Hidden(id, type, value);
-							fs.addElement(hidden);
-						}
-						Log.i(this.getClass().getName(), "mpe:input");
-					}
-					else if (serviceElementName.equals("mpe:select")) {
-						String id = xPath.evaluate("@id", serviceElement);
-						NodeList optionElements = (NodeList) xPath.evaluate("mpe:option", serviceElement, XPathConstants.NODESET);
-						String[] textArray = new String[optionElements.getLength()];
-						String[] valueArray = new String[optionElements.getLength()];
-						for (int m = 0; m < optionElements.getLength(); m++) {
-							Node optionElement = optionElements.item(m);
-							String text = optionElement.getTextContent();
-							String value = xPath.evaluate("@value", optionElement);
-							textArray[m] = text;
-							valueArray[m] = value;
-						}
-						Select select = new Select(id, "", "");
-						select.setOptions(textArray, valueArray);
-						fs.addElement(select);
-					}
-				}
-				task = new Task(taskId, taskName, className, fs);
-			} else if (className.equals(Service.EMAIL_SERVICE)) {
-				EmailService es = new EmailService();
-				String email = xPath.evaluate("mpe:email", service);
-				String subject = xPath.evaluate("mpe:subject", service);
-				String body = xPath.evaluate("mpe:body", service);
-				
-				es.setEmail(email);
-				es.setSubject(subject);
-				es.setBody(body);				
-				
-				task = new Task(taskId, taskName, className, es);
-			}
-		} catch (XPathExpressionException e) {
-			throw new RuntimeException("Unable to parse task",e);
-		}
-		return task;
-	}
 }

@@ -8,6 +8,8 @@ import java.util.List;
 import android.app.Activity;
 import android.util.Log;
 
+import it.unitn.disi.peng.process.engine.SubProcessInstanceActivity;
+
 public class SubProcess {
 	public String name;
 	private List <BpmnElement> elements;
@@ -103,7 +105,7 @@ public class SubProcess {
 		}
 	}
 	
-	public void executeNext(Activity activity) {
+	public void executeNext(SubProcessInstanceActivity activity) {
 		BpmnElement currentElement;
 		Log.i(this.getClass().getName(), "Current Index 1:" + currentIndex);
 		currentIndex = getNextIndex(currentIndex);
@@ -114,8 +116,9 @@ public class SubProcess {
 			if (currentElement instanceof Task) {
 				Log.i(this.getClass().getName(), "executeNext 2:" + currentElement.getName());
 				Task currentTask = (Task) currentElement;
-				currentTask.execute(activity, this);
-				variables = currentTask.getVariables();
+				activity.executeTask(currentTask);
+				//FIXME: handle variables
+				// variables = currentTask.getVariables();
 			}
 			else if (currentElement instanceof Gateway) {
 				Log.i(this.getClass().getName(), "executeNext 2:" + currentElement.getName());
