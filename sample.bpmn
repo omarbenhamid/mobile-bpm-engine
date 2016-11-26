@@ -22,8 +22,19 @@
         <bpmn:incoming>SequenceFlow_0bf83jt</bpmn:incoming>
         <bpmn:outgoing>SequenceFlow_0lzozyi</bpmn:outgoing>
       </bpmn:task>
-      <bpmn:startEvent id="StartEvent_10t5qb3">
+      <bpmn:startEvent id="StartEvent_10t5qb3" name="Starting">
         <bpmn:outgoing>SequenceFlow_0bf83jt</bpmn:outgoing>
+        <bpmn:extensionElements xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL">
+                   <mpe:service class="it.unitn.disi.peng.process.engine.FormActivity" spawned="true" xmlns:mpe="http://peng.disi.unitn.it">
+                       <mpe:input id="int" type="text" value="some value"/> <!-- HTML Style -->
+                       <mpe:text id="someId" value="This is some &lt;b&gt;text&lt;/b&gt;Zvalue"/> <!-- Display some text -->
+                       <mpe:select id="someID">
+                           <mpe:option value="V1">Option 1</mpe:option>
+                           <mpe:option value="V2">Option 2</mpe:option>
+                       </mpe:select>
+                       <mpe:input id="inv" type="submit" value="do it"/> <!-- HTML Style -->
+                   </mpe:service>
+               </bpmn:extensionElements>
       </bpmn:startEvent>
       <bpmn:sequenceFlow id="SequenceFlow_0bf83jt" sourceRef="StartEvent_10t5qb3" targetRef="Task_0xv1yc5" />
       <bpmn:endEvent id="EndEvent_1x7o427">

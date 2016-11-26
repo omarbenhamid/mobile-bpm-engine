@@ -11,7 +11,7 @@ public class Gateway extends BpmnElement {
 //	private String value;
 
 	public Gateway(String id, String name) {
-		super(id, name);
+		super(id, name, false);
 		branches = new HashMap<String, String>();
 	}
 	

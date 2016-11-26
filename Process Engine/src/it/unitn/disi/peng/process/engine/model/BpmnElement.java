@@ -6,10 +6,13 @@ public class BpmnElement implements Serializable{
 	
 	private String id;
 	private String name;
-	
-	BpmnElement(String id, String name) {
+	private boolean spawned = false;
+
+
+	BpmnElement(String id, String name, boolean spawned) {
 		this.id = id;
 		this.name = name;
+		this.spawned = spawned;
 	}
 	
 	public String getId() {
@@ -24,11 +27,16 @@ public class BpmnElement implements Serializable{
 		this.name = name;
 	}
 
+	public boolean isSpawned() {
+		return spawned;
+	}
+
 	@Override
 	public String toString() {
 		return "BpmnElement{" +
 				"id='" + id + '\'' +
 				", name='" + name + '\'' +
+				", spawned=" + spawned +
 				'}';
 	}
 }

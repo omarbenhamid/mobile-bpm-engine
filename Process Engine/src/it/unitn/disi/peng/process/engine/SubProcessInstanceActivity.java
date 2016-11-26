@@ -91,7 +91,7 @@ public class SubProcessInstanceActivity extends Activity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if(resultCode == RESULT_OK) subProcess.executeNext(this);
+		if(subProcess.getCurrentElement().isSpawned() || resultCode == RESULT_OK) subProcess.executeNext(this);
 		else {
 			new AlertDialog.Builder(this)
 					.setTitle("Not ok process activity")
@@ -103,7 +103,7 @@ public class SubProcessInstanceActivity extends Activity {
 					})
 					.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int which) {
-							// do nothing
+							finish();
 						}
 					})
 					.setIcon(android.R.drawable.ic_dialog_alert)

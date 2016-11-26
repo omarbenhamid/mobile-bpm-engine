@@ -8,8 +8,11 @@ Manages bpmn:task / bpmn:startEvent and bpmn:endEvent who occur in in bpmn:subPr
 
 Processes the following extension in the above tab :
 
+The class is the activity to start.
+if spawned is set to true : we do not expect the activity to return a result and the process go on when activity finishes ok.
+
 <bpmn:extensionElements xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL">
-    <mpe:service class="it.unitn.disi.peng.process.engine.service.FormService" xmlns:mpe="http://peng.disi.unitn.it">
+    <mpe:service class="it.unitn.disi.peng.process.engine.service.FormService" spawned="true" xmlns:mpe="http://peng.disi.unitn.it">
         <mpe:input id="someID" type="text|hidden|submit" value="some value"/> <!-- HTML Style -->
         <mpe:text id="someId" value="some value"/> <!-- Display some text -->
         <mpe:select id="someID">

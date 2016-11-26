@@ -260,15 +260,18 @@ public class SubProcess {
 	 * Functions to check / restore state.
 	 * @param id
      */
-	public void setCurrentTaskId(String id) {
+	public void setCurrentElementId(String id) {
 		currentIndex = elementId2Index(id);
 	}
 
-	public String getCurrentTaskId() {
+	public String getCurrentElementId() {
 		if(currentIndex < 0) return null;
 		return elements.get(currentIndex).getId();
 	}
 
 
-
+	public BpmnElement getCurrentElement() {
+		if(currentIndex < 0) return null;
+		return elements.get(currentIndex);
+	}
 }

@@ -9,6 +9,7 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.xpath.XPathConstants;
 
+import it.unitn.disi.peng.process.engine.model.Task;
 import it.unitn.disi.peng.process.engine.service.Button;
 import it.unitn.disi.peng.process.engine.service.FormService;
 import it.unitn.disi.peng.process.engine.service.Hidden;
@@ -25,8 +26,10 @@ public class FormActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Task t = (Task)getIntent().getSerializableExtra(SubProcessInstanceActivity.EXTRA_BPMN_TASK);
 
-        Log.i(LOG_TAG,"You know what : i shall show this form : " + getIntent().getSerializableExtra(SubProcessInstanceActivity.EXTRA_BPMN_TASK).toString());
+        Log.i(LOG_TAG,"You know what : i shall show this form : " + t.toString());
+        setTitle(t.getName());
 
         //setResult(RESULT_OK);
 

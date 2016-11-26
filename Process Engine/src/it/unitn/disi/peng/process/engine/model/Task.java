@@ -16,8 +16,9 @@ public class Task extends BpmnElement {
 	private String serviceXML;
 
 
-	public Task(String id, String name, String className, String serviceXML) {
-		super(id, name);
+
+	public Task(String id, String name, String className, String serviceXML, boolean spawn) {
+		super(id, name, spawn);
 		this.className = className;
 		this.serviceXML = serviceXML;
 	}
@@ -33,6 +34,7 @@ public class Task extends BpmnElement {
 	public String getServiceXML() {
 		return serviceXML;
 	}
+
 
 	@Override
 	public String toString() {

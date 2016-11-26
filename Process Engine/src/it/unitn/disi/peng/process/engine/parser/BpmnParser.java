@@ -75,9 +75,9 @@ public class BpmnParser {
 				Transformer transformer = TransformerFactory.newInstance().newTransformer();
 				transformer.transform(new DOMSource(service), new StreamResult(writer));
 
-				task = new Task(xPath.evaluate("@id", taskElement), xPath.evaluate("@name", taskElement), xPath.evaluate("@class", service), writer.toString());
+				task = new Task(xPath.evaluate("@id", taskElement), xPath.evaluate("@name", taskElement), xPath.evaluate("@class", service), writer.toString(), "true".equals(xPath.evaluate("@spawned", service)));
 			} else {
-				task = new Task(xPath.evaluate("@id", taskElement), xPath.evaluate("@name", taskElement), null, null);
+				task = new Task(xPath.evaluate("@id", taskElement), xPath.evaluate("@name", taskElement), null, null, true);
 			}
 
 			subProcess.addElement(task);
