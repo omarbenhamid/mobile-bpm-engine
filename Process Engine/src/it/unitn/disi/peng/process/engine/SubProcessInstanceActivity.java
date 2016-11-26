@@ -27,6 +27,7 @@ import it.unitn.disi.peng.process.engine.parser.BpmnParser;
 
 public class SubProcessInstanceActivity extends Activity {
 	private static final String LOG_TAG = "mpe.SubProcInstanceAct";
+	private static final String KEY_CURRENT_ELEMENTID="KEY_CURRENT_ELEMENTID";
 
 	public static final String EXTRA_BPMN_TASK = "it.unitn.disi.peng.process.engine.model.task.EXTRA_BPMN_TASK";
 	private SubProcess subProcess;
@@ -56,7 +57,17 @@ public class SubProcessInstanceActivity extends Activity {
 			throw new RuntimeException("Failed parsing subprocess!",ex);
 		}
 
-		subProcess.executeNext(this);
+		if(savedInstanceState == null) subProcess.executeNext(this);
+		else {
+			Log.d(LOG_TAG, "Resotre subprocess state but do nothing more as we are probably restoring to process onActivityResult");
+			subProcess.setCurrentElementId(savedInstanceState.getString(KEY_CURRENT_ELEMENTID));
+		}
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putString(KEY_CURRENT_ELEMENTID,subProcess.getCurrentElementId());
 	}
 
 	@Override
@@ -110,6 +121,7 @@ public class SubProcessInstanceActivity extends Activity {
 					.show();
 		}
 	}
+
 
 
 }
