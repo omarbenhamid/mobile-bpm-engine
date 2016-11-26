@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -31,11 +32,13 @@ public class SubProcessInstanceActivity extends Activity {
 
 	public static final String EXTRA_BPMN_TASK = "it.unitn.disi.peng.process.engine.model.task.EXTRA_BPMN_TASK";
 	private SubProcess subProcess;
+	private SharedPreferences prefs;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		prefs = getPreferences(MODE_PRIVATE);
 
 		File SDCardRoot = Environment.getExternalStorageDirectory();
 		File file = new File(SDCardRoot, "sample.bpmn");
@@ -57,17 +60,39 @@ public class SubProcessInstanceActivity extends Activity {
 			throw new RuntimeException("Failed parsing subprocess!",ex);
 		}
 
-		if(savedInstanceState == null) subProcess.executeNext(this);
-		else {
+
+		if(savedInstanceState != null) {
 			Log.d(LOG_TAG, "Resotre subprocess state but do nothing more as we are probably restoring to process onActivityResult");
 			subProcess.setCurrentElementId(savedInstanceState.getString(KEY_CURRENT_ELEMENTID));
+
+		}else{
+			String currElementId = prefs.getString(KEY_CURRENT_ELEMENTID, null);
+			if(currElementId== null) {
+				Log.d(LOG_TAG, "No saved state : starting a fresh instance.");
+				subProcess.executeNext(this);
+			}
+			else {
+				Log.d(LOG_TAG, "Found saved state, recovering process.");
+				subProcess.setCurrentElementId(currElementId);
+				subProcess.executeCurrent(this);
+			}
 		}
+
 	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putString(KEY_CURRENT_ELEMENTID,subProcess.getCurrentElementId());
+		outState.putString(KEY_CURRENT_ELEMENTID, subProcess.getCurrentElementId());
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+
+		SharedPreferences.Editor ed = prefs.edit();
+		ed.putString(KEY_CURRENT_ELEMENTID, subProcess.getCurrentElementId());
+		ed.commit();
 	}
 
 	@Override
@@ -114,7 +139,8 @@ public class SubProcessInstanceActivity extends Activity {
 					})
 					.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int which) {
-							finish();
+							//FIXME: offer an option in the menu to Reset or resume process
+							//FIXME: display the process and current state ?
 						}
 					})
 					.setIcon(android.R.drawable.ic_dialog_alert)
