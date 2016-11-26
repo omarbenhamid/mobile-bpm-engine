@@ -104,29 +104,38 @@ public class SubProcess {
 			}
 		}
 	}
+
+	/**
+	 * (Re) execute current activity
+	 * @param activity
+     */
+	public void executeCurrent(SubProcessInstanceActivity activity) {
+		BpmnElement currentElement;
+		currentElement = elements.get(currentIndex);
+		Log.i(this.getClass().getName(), "executeNext 1:" + currentIndex + ":" + currentElement.getName());
+		if (currentElement instanceof Task) {
+			Log.i(this.getClass().getName(), "executeNext 2:" + currentElement.getName());
+			Task currentTask = (Task) currentElement;
+			activity.executeTask(currentTask);
+			//FIXME: handle variables
+			// variables = currentTask.getVariables();
+		}
+		else if (currentElement instanceof Gateway) {
+			Log.i(this.getClass().getName(), "executeNext 2:" + currentElement.getName());
+			isGateway = true;
+			executeNext(activity);
+//				currentTask.execute(activity, this);
+//				variables = currentTask.getVariables();
+		}
+
+	}
 	
 	public void executeNext(SubProcessInstanceActivity activity) {
-		BpmnElement currentElement;
 		Log.i(this.getClass().getName(), "Current Index 1:" + currentIndex);
 		currentIndex = getNextIndex(currentIndex);
 		Log.i(this.getClass().getName(), "Current Index 2:" + currentIndex);
 		if (currentIndex >= 0) {
-			currentElement = elements.get(currentIndex);
-			Log.i(this.getClass().getName(), "executeNext 1:" + currentIndex + ":" + currentElement.getName());
-			if (currentElement instanceof Task) {
-				Log.i(this.getClass().getName(), "executeNext 2:" + currentElement.getName());
-				Task currentTask = (Task) currentElement;
-				activity.executeTask(currentTask);
-				//FIXME: handle variables
-				// variables = currentTask.getVariables();
-			}
-			else if (currentElement instanceof Gateway) {
-				Log.i(this.getClass().getName(), "executeNext 2:" + currentElement.getName());
-				isGateway = true;
-				executeNext(activity);
-//				currentTask.execute(activity, this);
-//				variables = currentTask.getVariables();
-			}
+			executeCurrent(activity);
 		}
 	}
 	
@@ -246,4 +255,20 @@ public class SubProcess {
 		}
 		return true;
 	}
+
+	/**
+	 * Functions to check / restore state.
+	 * @param id
+     */
+	public void setCurrentTaskId(String id) {
+		currentIndex = elementId2Index(id);
+	}
+
+	public String getCurrentTaskId() {
+		if(currentIndex < 0) return null;
+		return elements.get(currentIndex).getId();
+	}
+
+
+
 }

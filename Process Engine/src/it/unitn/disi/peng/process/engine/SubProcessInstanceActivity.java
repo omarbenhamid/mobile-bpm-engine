@@ -98,7 +98,7 @@ public class SubProcessInstanceActivity extends Activity {
 					.setMessage("Activity finished without result ok, restartit ?")
 					.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int which) {
-							// continue with delete
+							subProcess.executeCurrent(SubProcessInstanceActivity.this);
 						}
 					})
 					.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
