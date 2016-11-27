@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 
 import org.w3c.dom.Node;
 
@@ -39,6 +40,7 @@ public class SubProcessInstanceActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		prefs = getPreferences(MODE_PRIVATE);
+
 
 		File SDCardRoot = Environment.getExternalStorageDirectory();
 		File file = new File(SDCardRoot, "sample.bpmn");
@@ -101,6 +103,19 @@ public class SubProcessInstanceActivity extends Activity {
 		return true;
 	}
 
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch(item.getItemId()) {
+			case R.id.menu_resume:
+				subProcess.executeCurrent(this);
+				return true;
+			case R.id.menu_reset:
+				subProcess.reset();
+				subProcess.executeCurrent(this);
+				return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
 
 	//Called by subprocesss ...
 	public void executeTask(Task task) {

@@ -2,7 +2,12 @@
 
     <string name="app_name">Process Engine</string>
     <string name="hello_world">Hello world!</string>
-    <string name="menu_settings">Settings</string>
+    <string name="menu_reset">
+        Restart process
+    </string>
+    <string name="menu_resume">
+        Continue process
+    </string>
     <string name="title_activity_main">Mobile Process Engine</string>
 
 </resources>

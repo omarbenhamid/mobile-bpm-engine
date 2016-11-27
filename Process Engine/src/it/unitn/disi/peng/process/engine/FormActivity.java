@@ -3,6 +3,7 @@ package it.unitn.disi.peng.process.engine;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -25,6 +26,8 @@ public class FormActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_form);
 
         Task t = (Task)getIntent().getSerializableExtra(SubProcessInstanceActivity.EXTRA_BPMN_TASK);
 
@@ -86,5 +89,10 @@ public class FormActivity extends Activity {
         }
 
         */
+    }
+
+    public void onFormSubmit(View v){
+        setResult(RESULT_OK);
+        finish();
     }
 }
