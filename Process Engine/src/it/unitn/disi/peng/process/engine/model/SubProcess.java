@@ -110,7 +110,10 @@ public class SubProcess {
 	 * @param activity
      */
 	public void executeCurrent(SubProcessInstanceActivity activity) {
-		if(currentIndex == BEFORE_EXECUTION) executeNext(activity);
+		if(currentIndex == BEFORE_EXECUTION) {
+			executeNext(activity);
+			return;
+		}
 		BpmnElement currentElement;
 		currentElement = elements.get(currentIndex);
 		Log.i(this.getClass().getName(), "executeNext 1:" + currentIndex + ":" + currentElement.getName());

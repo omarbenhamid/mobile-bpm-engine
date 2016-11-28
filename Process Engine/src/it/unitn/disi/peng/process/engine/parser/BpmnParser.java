@@ -52,7 +52,6 @@ public class BpmnParser {
 		if(subProcesses.getLength() == 0) throw new Exception("No suprocesses found in bpmn");
 		if(subProcesses.getLength() > 1) Log.w(LOG_TAG,"Many subprocesses in given BPMN : only the first one will be parsed");
 
-		//FIXME: I know there should be no for loop but ...
 		Element subProcessElement = (Element) subProcesses.item(0);
 		String subProcessName = xPath.evaluate("@name", subProcessElement);
 		SubProcess subProcess = new SubProcess(subProcessName);

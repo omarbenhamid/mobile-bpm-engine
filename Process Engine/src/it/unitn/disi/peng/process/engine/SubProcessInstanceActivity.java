@@ -10,6 +10,8 @@ import android.os.Environment;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
 
 import org.w3c.dom.Node;
 
@@ -23,6 +25,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import it.unitn.disi.peng.process.engine.model.BpmnElement;
 import it.unitn.disi.peng.process.engine.model.SubProcess;
 import it.unitn.disi.peng.process.engine.model.Task;
 import it.unitn.disi.peng.process.engine.parser.BpmnParser;
@@ -34,6 +37,13 @@ public class SubProcessInstanceActivity extends Activity {
 	public static final String EXTRA_BPMN_TASK = "it.unitn.disi.peng.process.engine.model.task.EXTRA_BPMN_TASK";
 	private SubProcess subProcess;
 	private SharedPreferences prefs;
+
+	private void updateStatus() {
+		TextView textView = (TextView) findViewById(R.id.proc_status);
+		BpmnElement el = subProcess.getCurrentElement();
+		if(el == null) textView.setText("Not running");
+		else textView.setText("Current step : " + el.getName());
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -66,21 +76,25 @@ public class SubProcessInstanceActivity extends Activity {
 		if(savedInstanceState != null) {
 			Log.d(LOG_TAG, "Resotre subprocess state but do nothing more as we are probably restoring to process onActivityResult");
 			subProcess.setCurrentElementId(savedInstanceState.getString(KEY_CURRENT_ELEMENTID));
-
 		}else{
 			String currElementId = prefs.getString(KEY_CURRENT_ELEMENTID, null);
-			if(currElementId== null) {
-				Log.d(LOG_TAG, "No saved state : starting a fresh instance.");
-				subProcess.executeNext(this);
-			}
-			else {
+			if(currElementId!= null) {
 				Log.d(LOG_TAG, "Found saved state, recovering process.");
 				subProcess.setCurrentElementId(currElementId);
-				subProcess.executeCurrent(this);
 			}
 		}
-
+		updateStatus();
 	}
+
+	public void onClickExecute(View v) {
+		subProcess.executeCurrent(this);
+	}
+
+	public void onClickResetProcess(View v) {
+		subProcess.reset();
+		updateStatus();
+	}
+
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
@@ -111,7 +125,7 @@ public class SubProcessInstanceActivity extends Activity {
 				return true;
 			case R.id.menu_reset:
 				subProcess.reset();
-				subProcess.executeCurrent(this);
+				updateStatus();
 				return true;
 		}
 		return super.onOptionsItemSelected(item);
@@ -142,20 +156,27 @@ public class SubProcessInstanceActivity extends Activity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		if(subProcess.getCurrentElement().isSpawned() || resultCode == RESULT_OK) subProcess.executeNext(this);
-		else {
+		if(subProcess.getCurrentElement() == null) {
+			Log.w(LOG_TAG,"Is it normal ?");
+			updateStatus();
+			return;
+		}
+		if(subProcess.getCurrentElement().isSpawned() || resultCode == RESULT_OK) {
+			subProcess.executeNext(this);
+			updateStatus();
+		} else {
 			new AlertDialog.Builder(this)
 					.setTitle("Not ok process activity")
 					.setMessage("Activity finished without result ok, restartit ?")
 					.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int which) {
 							subProcess.executeCurrent(SubProcessInstanceActivity.this);
+							updateStatus();
 						}
 					})
 					.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int which) {
-							//FIXME: offer an option in the menu to Reset or resume process
-							//FIXME: display the process and current state ?
+							updateStatus();
 						}
 					})
 					.setIcon(android.R.drawable.ic_dialog_alert)
